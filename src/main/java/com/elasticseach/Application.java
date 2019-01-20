@@ -104,14 +104,11 @@ public class Application {
 	private static void insertAttachment(String path,String id) throws IOException {
 
 		Map<String, Object> dataMap = readFile(path);
-		System.out.println("dataMap--->" + dataMap);
 		IndexRequest indexRequest = new IndexRequest(INDEX, TYPE, id).source(dataMap)
 				.setPipeline("attachment");
 		try {
 			IndexResponse response = restHighLevelClient.index(indexRequest);
-			System.out.println("response " + response.toString());
 			Result result = response.getResult();
-			System.out.println(result);
 		} catch (ElasticsearchException e) {
 			e.getDetailedMessage();
 		} catch (java.io.IOException ex) {
