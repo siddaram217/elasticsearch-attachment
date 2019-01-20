@@ -36,17 +36,19 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * @author siddaram
+ *
+ */
 public class Application {
 
     //The config parameters for the connection
     private static final String HOST = "localhost";
     private static final int PORT_ONE = 9200;
-   // private static final int PORT_TWO = 9201;
     private static final String SCHEME = "http";
 
     private static RestHighLevelClient restHighLevelClient;
     private static ObjectMapper objectMapper = new ObjectMapper();
-
     private static final String INDEX = "attachments";
     private static final String TYPE = "documents";
 
@@ -66,14 +68,21 @@ public class Application {
         return restHighLevelClient;
     }
 
+    /**
+     * @throws IOException
+     */
     private static synchronized void closeConnection() throws IOException {
         restHighLevelClient.close();
         restHighLevelClient = null;
     }
 
     
+    /**
+     * @param path
+     * @return encoded file content string 
+     * @throws IOException
+     */
     private static String readFile(String path) throws IOException {
-		
 		String encodedfile = null;
 		FileInputStream fileInputStreamReader=null;
 		File file = new File(path);
@@ -92,13 +101,16 @@ public class Application {
 		return encodedfile;
 	}
     
+    /**
+     * @param path
+     * @throws IOException
+     * Insert Attachment
+     */
     private static void insertAttachment(String path) throws IOException{
         Map<String, Object> dataMap = new HashMap<String, Object>();
-        
        String encodedString= readFile(path);
        dataMap.put("path", path);
        dataMap.put("file", encodedString);
-       
        IndexRequest indexRequest = new IndexRequest(INDEX, TYPE, UUID.randomUUID().toString())
                 .source(dataMap).setPipeline("attachment");
         try {
@@ -113,6 +125,11 @@ public class Application {
         }
     }
     
+    /**
+     * @param content
+     * @return searchresponse
+     * Search Attachment by Content
+     */
     private static SearchResponse searchAttachments(String content) {
         SearchResponse getResponse = null;
         try {
@@ -128,6 +145,11 @@ public class Application {
         return getResponse ;
     }
 
+    /**
+     * @param id
+     * @param path
+     * @return updated attachment
+     */
     private static Attachment updateAttachmentById(String id,String path){
         UpdateRequest updateRequest = new UpdateRequest(INDEX, TYPE, id)
                 .fetchSource(true);    // Fetch Object after its update
@@ -145,6 +167,10 @@ public class Application {
         return null;
     }
 
+    /**
+     * @param id
+     * Delete attachment by id
+     */
     private static void deleteAttachmentById(String id) {
         DeleteRequest deleteRequest = new DeleteRequest(INDEX, TYPE, id);
         RefreshPolicy refreshPolicy=RefreshPolicy.IMMEDIATE;
@@ -158,12 +184,16 @@ public class Application {
         }
     }
     
+    /**
+     * @param response
+     * @return List of Attachments
+     * @throws Exception
+     * Read the search response 
+     */
     private static List<Attachment> readResponse(SearchResponse response) throws Exception {
 		List<Attachment> attachments=new ArrayList<Attachment>();
 		if (response != null) {
-			System.out.println("hits-->"+response.getHits());
 			long totalCount = response.getHits().getTotalHits();
-			System.out.println("totalCount--> "+totalCount);
 			if (totalCount >= 0) {
 				SearchHit[] hits = response.getHits().getHits();
 				for (SearchHit searchHit : hits) {
@@ -182,10 +212,13 @@ public class Application {
 		return attachments;
 	}
 
+    /**
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
-
         makeConnection();
-        String filePath ="C:\\Users\\siddaram\\Downloads\\college\\kea_NC420_2018_07_14_15_11_44.pdf"; 
+        String filePath ="F:\\study\\elasticsearch-with-attachment-master\\llncs.pdf"; 
 		System.out.println("Before calling insert attachment..........!!");
         insertAttachment(filePath);
         System.out.println("After attachment insertion..........!!");
