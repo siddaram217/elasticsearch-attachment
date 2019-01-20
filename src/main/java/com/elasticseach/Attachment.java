@@ -1,25 +1,19 @@
 package com.elasticseach;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
+@JsonIdentityReference
 public class Attachment {
 	
 	private String id;
-	
 	private String content;
-	
 	private String date;
 	private String content_type;
 	private String language;
 	private String content_length;
 	private String author;
 	private String title;
-	private String path;
-	
-	public String getPath() {
-		return path;
-	}
-	public void setPath(String path) {
-		this.path = path;
-	}
+
 	public String getId() {
 		return id;
 	}
